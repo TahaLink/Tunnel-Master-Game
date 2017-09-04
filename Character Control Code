@@ -1,0 +1,103 @@
+public float maxTime;
+    public float minSwipeDist;
+
+    float startTime;
+    float endTime;
+
+    Vector3 startPos;
+    Vector3 endPos;
+    float swipeDistance;
+    float swipeTime;
+
+
+
+    private Rigidbody2D myRigidBody;
+    public float jumpforce;
+    public float maxspeed = 5;
+    public bool grounded;
+    public LayerMask whatIsGround;
+
+    private Collider2D myCollider;
+
+    private Animator myAnimator;
+
+
+    
+	// Use this for initialization
+	void Start () {
+        myRigidBody = GetComponent<Rigidbody2D>();
+
+        myCollider = GetComponent<Collider2D>();
+
+        myAnimator = GetComponent<Animator>();
+	}
+	
+	// Update is called once per frame
+	void Update () {
+
+        grounded = Physics2D.IsTouchingLayers(myCollider, whatIsGround);
+
+        myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, myRigidBody.velocity.y);
+        
+        if(myRigidBody.velocity.magnitude > maxspeed)
+        {
+            myRigidBody.velocity = Vector2.ClampMagnitude(myRigidBody.velocity, maxspeed);
+        }
+     
+
+        { }
+        float temp = Input.acceleration.x;
+        transform.Translate(temp, 0, 0);
+        
+        if (Input.touchCount > 0) {
+
+            Touch touch = Input.GetTouch(0);
+
+
+            if (touch.phase == TouchPhase.Began) {
+                startTime = Time.time;
+                startPos = touch.position;
+            }
+            else if (touch.phase == TouchPhase.Ended)
+            {
+                endTime = Time.time;
+                endPos = touch.position;
+
+                swipeDistance = (endPos - startPos).magnitude;
+                swipeTime = endTime - startTime;
+
+                if(swipeTime < maxTime && swipeDistance > minSwipeDist) {
+
+                    swipe();
+                }
+            }
+
+        };
+
+
+        myAnimator.SetFloat("Speed", myRigidBody.velocity.x);
+        myAnimator.SetBool("Grounded", grounded);
+        
+    }
+
+    void swipe()  {
+
+        Vector2 distance = endPos - startPos;
+        if(Mathf.Abs(distance.y) > 0)
+        {
+            Debug.Log("verticle swipe");
+            if (distance.y > 0)
+            {
+                Debug.Log("up swipe");
+
+                Jump();
+            }
+        }
+
+    }
+         
+    public void Jump()
+    {
+        myRigidBody.AddForce(new Vector2(0, jumpforce));
+    }
+}
